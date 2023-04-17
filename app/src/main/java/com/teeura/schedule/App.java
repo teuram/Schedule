@@ -2,13 +2,19 @@ package com.teeura.schedule;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.hash.Hashing;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -24,15 +30,59 @@ public class App {
         return conn.getInputStream();
     }
 
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
     public static String schedule(String[] groups) {
         try {
-            InputStream inp = get_stream("https://cloud.nntc.nnov.ru/index.php/s/S5cCa8MWSfyPiqx/download");
-            Workbook wb = new XSSFWorkbook(inp);
+            InputStream inp = get_stream(
+                    "https://cloud.nntc.nnov.ru/index.php/s/S5cCa8MWSfyPiqx/download");
+
+            byte[] buffer = new byte[8192];
+
+            // Creating an object of ByteArrayOutputStream class
+            ByteArrayOutputStream byteArrayOutputStream
+                = new ByteArrayOutputStream();
+
+            // Try block to check for exceptions
+            try {
+                int temp;
+
+                while ((temp = inp.read(buffer)) != -1) {
+                    byteArrayOutputStream.write(buffer, 0, temp);
+                }
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+
+            // Mow converting byte array output stream to byte
+            // array
+            byte[] byteArray
+                = byteArrayOutputStream.toByteArray();
+
+
+            String sha256 = Hashing.sha256()
+                .hashBytes(byteArray)
+                .toString();
+
+            InputStream strr = new ByteArrayInputStream(byteArray);
+            Workbook wb = new XSSFWorkbook(strr);
 
             Iterator<Sheet> sheets = wb.iterator();
             while (sheets.hasNext()) {
                 Sheet sheet = sheets.next();
-                return getSchedule(sheet, groups);
+                String a = getSchedule(sheet, groups);
+                a += "\n\nhash: " + sha256;
+                return a;
             }
             inp.close();
             wb.close();
@@ -80,11 +130,11 @@ public class App {
 
             String[] spl = rowCeils.get(i + 2).split("/");
 
-            if (!spl[0].trim().isEmpty()) {
+            // if (!spl[0].trim().isEmpty()) {
                 if (spl.length == 2) {
                     sb.append(String.format("[%d] -> %s -> %s / %s\n\r    %s\n\n", (i / 3) + 1, time, room, spl[1].trim(), spl[0].trim()));
                 }
-            }
+            // }
 
         }
         return sb.toString();

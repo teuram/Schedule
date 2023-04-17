@@ -29,6 +29,8 @@ dependencies {
     implementation 'org.apache.poi:poi-ooxml-lite:5.2.3'
     implementation 'org.apache.xmlbeans:xmlbeans:5.1.1'
 
+    implementation("com.google.guava:guava:31.1-android")
+
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'org.apache.commons:commons-compress:1.21'

@@ -1,4 +1,5 @@
 
+run: all
 all:
 	gradle assembleDebug
 	adb install `find . -name 'app-debug.apk'`
