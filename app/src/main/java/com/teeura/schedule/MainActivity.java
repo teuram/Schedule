@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Typeface;
 
 import java.io.IOException;
 
@@ -31,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(get);
         tv.setPadding(16, 16, 16, 16);
 
+        Typeface face = Typeface.MONOSPACE;
+        tv.setTypeface(face);
+
         sv.addView(tv);
 
         Thread thread = new Thread() {
@@ -39,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
                 final String[] groups = new String[] {
                     "3РПУ-20-1",
                     "23-1МРПс",
-                    "23-1 МРП (с)"
+                    "23-1 МРП (с)",
+                    "223-1 МРП (с)"
                 };
                 String str = App.schedule(groups);
                 runOnUiThread(() -> tv.setText(str));

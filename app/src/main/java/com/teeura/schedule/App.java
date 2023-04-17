@@ -80,9 +80,12 @@ public class App {
 
             String[] spl = rowCeils.get(i + 2).split("/");
 
-            if (spl.length == 2) {
-                sb.append(String.format("[%d] -> %s -> %s / %s\n\r\t%s\n\n", (i / 3) + 1, time, room, spl[1].trim(), spl[0].trim()));
+            if (!spl[0].trim().isEmpty()) {
+                if (spl.length == 2) {
+                    sb.append(String.format("[%d] -> %s -> %s / %s\n\r    %s\n\n", (i / 3) + 1, time, room, spl[1].trim(), spl[0].trim()));
+                }
             }
+
         }
         return sb.toString();
     }
@@ -139,7 +142,7 @@ public class App {
 
                 for (String group : groups) {
                     if (cell.toString().equals(group)) {
-                        sb.append(cell.toString()); // add name of group
+                        sb.append(String.format("[%s]", cell.toString())); // add name of group
                         sb.append('\n');
 
                         ArrayList<String> cel = cellsToStrings(cells); // lessons (RAW)
