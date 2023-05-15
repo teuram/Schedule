@@ -69,7 +69,6 @@ public class App {
             byte[] byteArray
                 = byteArrayOutputStream.toByteArray();
 
-
             String sha256 = Hashing.sha256()
                 .hashBytes(byteArray)
                 .toString();
@@ -112,7 +111,7 @@ public class App {
 
     private static String formatOutput(ArrayList<String> rowCeils) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < rowCeils.size(); i += 3) {
+        for (int i = 0; i < (rowCeils.size() - rowCeils.size() % 3); i += 3) {
             String time = rowCeils.get(i);
             String room = rowCeils.get(i + 1);
 
@@ -200,7 +199,8 @@ public class App {
                         if (cel.size() % 3 == 0) {
                             sb.append(formatOutput(cel));
                         } else {
-                            sb.append(rawOutput(cel));
+                            // sb.append(rawOutput(cel));
+                            sb.append(formatOutput(cel));
                         }
                     }
                 }
