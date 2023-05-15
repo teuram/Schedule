@@ -136,13 +136,25 @@ public class App {
             // }
 
         }
+        if (rowCeils.size() % 3 != 0) {
+            int e = rowCeils.size() - rowCeils.size() % 3;
+            sb.append("warning: the number of cells in line is not divisible by 3 without a remainder, schedule may not display correctly, dump raw:\n");
+            for (int curent = e; curent < rowCeils.size(); curent++) {
+                 sb.append("hex: ");
+                 sb.append(bytesToHex(rowCeils.get(e).getBytes()));
+                 sb.append("\n");
+                 sb.append("txt: ");
+                 sb.append(rowCeils.get(e).toCharArray());
+                 sb.append("\n");
+            }
+        }
         return sb.toString();
     }
 
-    private static String rawOutput(ArrayList<String> rowCeils) {
+    // private static String rawOutput(ArrayList<String> rowCeils) {
 
-        return "raw output: TODO\n";
-    }
+    //     return "raw output: TODO\n";
+    // }
 
     private static String formatOutputCheckIsDay(Cell cell) {
         Pattern pattern = Pattern.compile("[0-9]{1,}.*[а-яА-Я]{1,}.*[0-9]{1,}.*\\([а-яА-Я]{1,}\\)");
@@ -195,13 +207,7 @@ public class App {
                         sb.append('\n');
 
                         ArrayList<String> cel = cellsToStrings(cells); // lessons (RAW)
-
-                        if (cel.size() % 3 == 0) {
-                            sb.append(formatOutput(cel));
-                        } else {
-                            // sb.append(rawOutput(cel));
-                            sb.append(formatOutput(cel));
-                        }
+                        sb.append(formatOutput(cel));
                     }
                 }
             }
