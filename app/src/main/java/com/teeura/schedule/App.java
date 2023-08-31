@@ -14,8 +14,6 @@ import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.hash.Hashing;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -47,41 +45,11 @@ public class App {
             InputStream inp = get_stream(
                     "https://cloud.nntc.nnov.ru/index.php/s/S5cCa8MWSfyPiqx/download");
 
-            byte[] buffer = new byte[8192];
-
-            // Creating an object of ByteArrayOutputStream class
-            ByteArrayOutputStream byteArrayOutputStream
-                = new ByteArrayOutputStream();
-
-            // Try block to check for exceptions
-            try {
-                int temp;
-
-                while ((temp = inp.read(buffer)) != -1) {
-                    byteArrayOutputStream.write(buffer, 0, temp);
-                }
-            } catch (IOException e) {
-                System.out.println(e);
-            }
-
-            // Mow converting byte array output stream to byte
-            // array
-            byte[] byteArray
-                = byteArrayOutputStream.toByteArray();
-
-            String sha256 = Hashing.sha256()
-                .hashBytes(byteArray)
-                .toString();
-
-            InputStream strr = new ByteArrayInputStream(byteArray);
-            Workbook wb = new XSSFWorkbook(strr);
+            Workbook wb = new XSSFWorkbook(inp);
 
             Iterator<Sheet> sheets = wb.iterator();
             while (sheets.hasNext()) {
-                Sheet sheet = sheets.next();
-                String a = getSchedule(sheet, groups);
-                a += "\n\nhash: " + sha256;
-                return a;
+                return getSchedule(sheets.next(), groups);
             }
             inp.close();
             wb.close();
@@ -129,32 +97,17 @@ public class App {
 
             String[] spl = rowCeils.get(i + 2).split("/");
 
-            // if (!spl[0].trim().isEmpty()) {
-                if (spl.length == 2) {
-                    sb.append(String.format("[%d] -> %s -> %s / %s\n\r    %s\n\n", (i / 3) + 1, time, room, spl[1].trim(), spl[0].trim()));
+            if (spl.length == 2) {
+                sb.append(String.format("[%d] -> %s -> %s / %s\n\r    %s\n\n", (i / 3) + 1, time, room, spl[1].trim(), spl[0].trim()));
+            } else {
+                if (spl.length == 1 && spl[0].trim().length() > 1) {
+                    sb.append(String.format("[%d] -> %s -> %s\n\r    %s\n\n", (i / 3) + 1, time, room, spl[0].trim()));
                 }
-            // }
-
-        }
-        if (rowCeils.size() % 3 != 0) {
-            int e = rowCeils.size() - rowCeils.size() % 3;
-            sb.append("warning: the number of cells in line is not divisible by 3 without a remainder, schedule may not display correctly, dump raw:\n");
-            for (int curent = e; curent < rowCeils.size(); curent++) {
-                 sb.append("hex: ");
-                 sb.append(bytesToHex(rowCeils.get(e).getBytes()));
-                 sb.append("\n");
-                 sb.append("txt: ");
-                 sb.append(rowCeils.get(e).toCharArray());
-                 sb.append("\n");
             }
+
         }
         return sb.toString();
     }
-
-    // private static String rawOutput(ArrayList<String> rowCeils) {
-
-    //     return "raw output: TODO\n";
-    // }
 
     private static String formatOutputCheckIsDay(Cell cell) {
         Pattern pattern = Pattern.compile("[0-9]{1,}.*[а-яА-Я]{1,}.*[0-9]{1,}.*\\([а-яА-Я]{1,}\\)");
@@ -188,6 +141,7 @@ public class App {
     private static String getSchedule(Sheet sheet, String[] groups) {
         StringBuilder sb = new StringBuilder();
         Iterator<Row> rows = sheet.rowIterator();
+        boolean is_first_day = true;
         while (rows.hasNext()) {
             Row row = rows.next();
             Iterator<Cell> cells = row.cellIterator();
@@ -196,6 +150,11 @@ public class App {
 
                 String day = formatOutputCheckIsDay(cell);
                 if (day != null) {
+                    if (!is_first_day) {
+                        sb.append("\n\n");
+                    } else {
+                        is_first_day = false;
+                    }
                     sb.append(day);
                     sb.append('\n');
                     continue;
